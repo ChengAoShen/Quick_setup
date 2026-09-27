@@ -308,16 +308,21 @@ do_tools() {
   if [ $MODE = brew ]; then
     brew install $pkgs
   else
-    # A separate env that is never activated; only the wanted binaries
-    # are linked into ~/.local/bin, so its openssl and friends do not
-    # shadow the system ones.
-    local env=$MAMBA_ROOT/envs/tools sub=create
-    [ -d "$env" ] && sub=install
-    micromamba $sub -y -r "$MAMBA_ROOT" -n tools -c conda-forge $pkgs || return 1
-    for c in $PICK; do
-      [ -x "$env/bin/$c" ] && ln -sfn "$env/bin/$c" "$HOME/.local/bin/$c"
-    done
+    mamba_add "$pkgs" "$PICK"
   fi
+}
+
+# A separate env that is never activated; only the wanted binaries
+# are linked into ~/.local/bin, so its openssl and friends do not
+# shadow the system ones.
+mamba_add() {  # mamba_add "<packages>" "<commands to link>"
+  local c env=$MAMBA_ROOT/envs/tools sub=create
+  [ -d "$env" ] && sub=install
+  micromamba $sub -y -r "$MAMBA_ROOT" -n tools -c conda-forge $1 || return 1
+  for c in $2; do
+    [ -x "$env/bin/$c" ] && ln -sfn "$env/bin/$c" "$HOME/.local/bin/$c"
+  done
+  return 0
 }
 
 # Neovim comes from bob, so every machine can be put on the same
@@ -341,6 +346,15 @@ do_bob() {
     mkdir -p "$HOME/.local/bin"
     install -m 755 "$t/bob-$a/bob" "$HOME/.local/bin/bob" || return 1
     rm -rf "$t"
+    # The Linux builds need a recent glibc (2.39 for bob 4.2), which
+    # Ubuntu 22.04 and older do not have. Fall back to conda-forge.
+    if ! "$HOME/.local/bin/bob" --version >/dev/null 2>&1; then
+      rm -f "$HOME/.local/bin/bob"
+      [ $MODE = mamba ] || return 1
+      warn "bob does not run on this system; installing nvim from conda-forge instead"
+      mamba_add nvim nvim
+      return
+    fi
   fi
   bob use stable
 }
