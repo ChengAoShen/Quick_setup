@@ -298,9 +298,18 @@ do_mamba() {
     aarch64|arm64) plat=linux-aarch64 ;;
     *) warn "no micromamba build for $ARCH"; return 1 ;;
   esac
+  local bin=$HOME/.local/bin/micromamba
   mkdir -p "$HOME/.local/bin"
-  curl -fsSL "https://micro.mamba.pm/api/micromamba/$plat/latest" |
-    tar -xj -C "$HOME/.local/bin" --strip-components=1 bin/micromamba
+  # The bare binary from GitHub needs no tar or bzip2, which minimal
+  # images often lack; micro.mamba.pm's tarball is the fallback.
+  if ! curl -fsSL -o "$bin" "https://github.com/mamba-org/micromamba-releases/releases/latest/download/micromamba-$plat"; then
+    warn "GitHub download failed, trying micro.mamba.pm"
+    curl -fsSL "https://micro.mamba.pm/api/micromamba/$plat/latest" |
+      tar -xj -C "$HOME/.local/bin" --strip-components=1 bin/micromamba
+  fi
+  chmod 755 "$bin" 2>/dev/null
+  "$bin" --version >/dev/null 2>&1 || { rm -f "$bin"; warn "micromamba does not run on this system"; return 1; }
+  ok "micromamba $("$bin" --version)"
 }
 
 do_tools() {
