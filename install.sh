@@ -109,7 +109,7 @@ if [ $TTY = 1 ]; then exec </dev/tty; else exec </dev/null; fi
 
 # === 1. Look at the machine ===========================================
 
-export PATH=$HOME/.local/bin:$PATH
+export PATH=$HOME/.local/bin:$HOME/.cargo/bin:$PATH
 BREW=
 find_brew
 
@@ -153,6 +153,7 @@ direnv     direnv     direnv      per-directory env
 just       just       just        command runner
 uv         uv         uv          Python packages
 fastfetch  fastfetch  fastfetch   system info greeting
+yazi       yazi       yazi        terminal file manager
 '
 
 pkg_of() {  # pkg_of <cmd>
@@ -215,6 +216,13 @@ if [ -d "$PLUGIN_DIR/zsh-autosuggestions" ] && [ -d "$PLUGIN_DIR/zsh-syntax-high
 else
   no "autosuggestions, syntax-highlighting"
   will git && ask "Install them?" y && DO="$DO plugins"
+fi
+
+say "Rust"
+if has rustup; then ok "rustup"
+else
+  no "rustup"
+  ask "Install Rust (rustup, stable toolchain)?" y && DO="$DO rust"
 fi
 
 say "Claude Code"
@@ -314,7 +322,10 @@ mamba_add() {  # mamba_add "<packages>" "<commands to link>"
   [ -d "$env" ] && sub=install
   micromamba $sub -y -r "$MAMBA_ROOT" -n tools -c conda-forge $1 || return 1
   for c in $2; do
-    [ -x "$env/bin/$c" ] && ln -sfn "$env/bin/$c" "$HOME/.local/bin/$c"
+    [ "$c" = yazi ] && c="yazi ya"   # ya is yazi's plugin manager
+    for c in $c; do
+      [ -x "$env/bin/$c" ] && ln -sfn "$env/bin/$c" "$HOME/.local/bin/$c"
+    done
   done
   return 0
 }
@@ -328,6 +339,13 @@ do_plugins() {
     fi || return 1
     ok "$r"
   done
+}
+
+# The official installer, under ~ on both systems. PATH is already
+# handled by .zshrc, so it is told to leave shell files alone.
+do_rust() {
+  curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs |
+    sh -s -- -y --no-modify-path --profile default -c rust-analyzer -c rust-src
 }
 
 do_claude() { curl -fsSL https://claude.ai/install.sh | bash; }
@@ -348,7 +366,7 @@ do_zshrc() {
       printf 'eval "$(%s shellenv zsh)"\n\n' "$BREW"
     fi
     fetch zsh/base.zsh
-    for s in micromamba nvim eza bat starship zoxide fzf direnv atuin; do
+    for s in micromamba nvim eza bat starship zoxide fzf yazi direnv atuin; do
       has "$s" && fetch "zsh/$s.zsh"
     done
     fetch zsh/end.zsh

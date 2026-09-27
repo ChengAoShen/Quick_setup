@@ -61,6 +61,7 @@ as the script goes. `… | bash -s -- -y` takes every default without asking;
 | just      | command runner                | —                                      |
 | uv        | Python package manager        | —                                      |
 | fastfetch | system info greeting          | greeting on start, `fastfetch/` config |
+| yazi      | terminal file manager         | `y` (cd to where you quit)             |
 
 **Others**
 
@@ -68,6 +69,7 @@ as the script goes. `… | bash -s -- -y` takes every default without asking;
 |-------------------------|--------------------------------------------------------|
 | zsh-autosuggestions     | suggests commands from history                         |
 | zsh-syntax-highlighting | colors commands as you type                            |
+| Rust                    | rustup + stable toolchain, rust-analyzer, rust-src     |
 | Claude Code             | Anthropic's CLI (off by default), plus `settings.json` |
 | Neovim config           | clones [ChengAoShen/nvim](https://github.com/ChengAoShen/nvim) to `~/.config/nvim` |
 | Login shell             | Linux only: makes zsh the default shell                |

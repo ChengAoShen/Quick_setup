@@ -59,6 +59,7 @@ curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/instal
 | just      | 命令运行器            | —                                    |
 | uv        | Python 包管理         | —                                    |
 | fastfetch | 系统信息欢迎页        | 启动时显示、`fastfetch/` 配置        |
+| yazi      | 终端文件管理器        | `y`（退出后 cd 到所在目录）          |
 
 **其他**
 
@@ -66,6 +67,7 @@ curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/instal
 |-------------------------|-------------------------------------------------------|
 | zsh-autosuggestions     | 根据历史记录提示命令                                  |
 | zsh-syntax-highlighting | 输入时高亮命令                                        |
+| Rust                    | rustup + stable 工具链、rust-analyzer、rust-src       |
 | Claude Code             | Anthropic 的命令行工具（默认不装），附带 `settings.json` |
 | Neovim 配置             | 将 [ChengAoShen/nvim](https://github.com/ChengAoShen/nvim) clone 到 `~/.config/nvim` |
 | 默认 shell              | 仅 Linux：将 zsh 设为默认 shell                       |
