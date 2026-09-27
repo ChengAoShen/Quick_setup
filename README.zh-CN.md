@@ -19,12 +19,27 @@ curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/instal
 2. **询问**：所有问题在开头逐项问完。
 3. **安装**：最后确认一次后按顺序执行，结束时汇报失败的步骤。
 
-| 步骤       | macOS    | Linux                                   |
+执行顺序：包管理器、命令行工具、zsh 插件、Rust、Claude Code、
+配置文件、Neovim 配置、默认 shell。
+
+## 各组件从哪里安装
+
+| 项目       | macOS    | Linux                                   |
 |------------|----------|-----------------------------------------|
-| 包管理器   | Homebrew | micromamba，装在 `~/.local/bin`         |
-| 命令行工具 | brew     | conda-forge 环境，链接到 `~/.local/bin` |
+| 包管理器   | Homebrew | micromamba，单个二进制文件，放在 `~/.local/bin` |
+| 命令行工具 | brew     | conda-forge 的 `tools` 环境（不激活），命令链接到 `~/.local/bin` |
 | zsh 插件   | git clone 到 `~/.local/share/zsh/plugins` | 同左   |
-| 默认 shell | 已是 zsh | 能用 sudo 就 `sudo chsh`，否则在 `~/.bashrc` 中 exec zsh |
+| Rust       | 官方 rustup：`~/.rustup`、`~/.cargo` | 同左         |
+| Claude Code | 官方安装脚本：`~/.local/bin/claude` | 同左          |
+| 默认 shell | 系统默认就是 zsh，不做改动 | 账号能用 sudo 就 `sudo chsh`，否则在 `~/.bashrc` 中 exec zsh |
+
+Linux 上全程不需要 root。只在 `/usr/bin` 或 `/bin` 里有的工具也会
+列出来供安装，因为系统自带的版本可能很旧。micromamba 的环境根目录
+是 `~/.local/share/mamba`；如果已有 `~/micromamba`，则沿用它。
+
+**一个工具只从一个地方装。** 所有命令行工具都来自 brew 或
+conda-forge，不再同时用 `cargo install` 或其他安装方式，这样 PATH
+上只有一份、升级也只有一种方式。cargo 用于 Rust 开发，不用来装工具。
 
 ## 可安装的内容
 
@@ -74,26 +89,50 @@ curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/instal
 
 ## 配置文件
 
-```
-config/
-  zshenv                 -> ~/.zshenv（设置 ZDOTDIR）
-  zsh/*.zsh              -> 拼装成 ~/.config/zsh/.zshrc
-  starship.toml          -> ~/.config/starship.toml
-  tmux.conf              -> ~/.config/tmux/tmux.conf
-  fastfetch/             -> ~/.config/fastfetch/
-  claude-settings.json   -> ~/.claude/settings.json
-```
+全部在 `config/` 目录下，脚本运行时下载。
 
-`.zshrc` 是**自动生成**的：先是 `zsh/base.zsh`（PATH、历史、
-补全），然后为每个实际装上的工具追加对应片段，最后是
-`zsh/end.zsh`（插件）。之后再装了新工具，重新运行脚本即可加上
-它的配置。
+| 仓库中的文件           | 安装到                          | 内容 |
+|------------------------|---------------------------------|------|
+| `zshenv`               | `~/.zshenv`                     | 只设置 `ZDOTDIR=~/.config/zsh` |
+| `zsh/*.zsh`            | `~/.config/zsh/.zshrc`          | 自动生成，见下 |
+| `starship.toml`        | `~/.config/starship.toml`       | 分段式提示符：系统、目录、git、语言版本、conda 环境、时间 |
+| `tmux.conf`            | `~/.config/tmux/tmux.conf`      | `hjkl` 切换窗格、`\|` / `-` 分屏、鼠标、真彩色、passthrough；状态栏只在 SSH 时显示 |
+| `fastfetch/`           | `~/.config/fastfetch/`          | 欢迎页布局和图片 |
+| `claude-settings.json` | `~/.claude/settings.json`       | Claude Code：禁止读取 `.env`、私钥和 `~/.ssh`；Concise 输出；开启思考 |
 
-个人配置和 API key 请放在 `~/.config/zsh/local.zsh`（权限 600）。
-脚本只在第一次创建它，之后不会再改动。
+`.zshrc` 是**自动生成**的，顺序如下：
+
+1. `brew shellenv`（仅 macOS）
+2. `zsh/base.zsh`：PATH（`~/.local/bin`、`~/.cargo/bin`）、历史、
+   选项、补全、`..` 和 git 别名
+3. 每个实际装上的工具一段：`micromamba`、`nvim`、`eza`、`bat`、
+   `starship`、`zoxide`、`fzf`、`yazi`、`direnv`、`atuin`
+4. `zsh/end.zsh`：加载 `local.zsh`，然后是两个插件
+5. `zsh/fastfetch.zsh`（装了 fastfetch 时）
+
+所以里面不会引用没装的命令。之后再装了新工具，重新运行脚本即可
+加上它的配置。
+
+### local.zsh
+
+`~/.config/zsh/local.zsh`（权限 600）用来放 API key 和只属于这台
+机器的设置，例如 `JAVA_HOME` 这类工具链、数据盘上的缓存目录、集群
+专用的函数。脚本只在第一次创建它，之后不会再改动；旧版本留下的
+`secrets.zsh` 会被自动改名为它。
 
 所有被替换的文件都会先移动到
 `~/.local/state/quick_setup/backup-<时间>/` 备份。
+
+## 多台机器保持同步
+
+修改 `config/`（或 `install.sh`）并推送后，在每台机器上运行：
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh | bash -s -- -y
+```
+
+没有变化的文件会跳过，有变化的会先备份再替换。GitHub 的 raw 地址
+有几分钟缓存，推送后稍等一会儿再运行，否则可能拿到旧版脚本。
 
 ## 添加新工具
 

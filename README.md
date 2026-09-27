@@ -21,12 +21,29 @@ as the script goes. `… | bash -s -- -y` takes every default without asking;
 3. **Install**: after one final confirmation, runs the steps in
    order and reports anything that failed.
 
-| Step            | macOS                   | Linux                                        |
+Steps run in this order: package manager, CLI tools, zsh plugins,
+Rust, Claude Code, config files, Neovim config, login shell.
+
+## Where everything comes from
+
+| Item            | macOS                   | Linux                                        |
 |-----------------|-------------------------|----------------------------------------------|
-| Package manager | Homebrew                | micromamba in `~/.local/bin`                 |
-| CLI tools       | brew                    | conda-forge env, linked into `~/.local/bin`  |
+| Package manager | Homebrew                | micromamba, a single binary in `~/.local/bin` |
+| CLI tools       | brew                    | conda-forge env `tools`, never activated; its binaries are linked into `~/.local/bin` |
 | zsh plugins     | git clone to `~/.local/share/zsh/plugins` | same                       |
-| Login shell     | already zsh             | `sudo chsh` if possible, else `~/.bashrc` execs zsh |
+| Rust            | official rustup: `~/.rustup`, `~/.cargo` | same                          |
+| Claude Code     | official installer: `~/.local/bin/claude` | same                         |
+| Login shell     | already zsh, left alone | `sudo chsh` if the account can sudo, else `~/.bashrc` execs zsh |
+
+On Linux nothing needs root. A tool found only in `/usr/bin` or
+`/bin` is still offered, since system copies there can be years
+old. The micromamba env root is `~/.local/share/mamba`, or
+`~/micromamba` if that already exists.
+
+**One source per tool.** Every CLI tool comes from brew or
+conda-forge, never also from `cargo install` or a second
+installer, so there is one copy on `PATH` and one way to update
+it. cargo is there for Rust development, not for installing tools.
 
 ## What can be installed
 
@@ -76,26 +93,54 @@ as the script goes. `… | bash -s -- -y` takes every default without asking;
 
 ## Config files
 
-```
-config/
-  zshenv                 -> ~/.zshenv (sets ZDOTDIR)
-  zsh/*.zsh              -> assembled into ~/.config/zsh/.zshrc
-  starship.toml          -> ~/.config/starship.toml
-  tmux.conf              -> ~/.config/tmux/tmux.conf
-  fastfetch/             -> ~/.config/fastfetch/
-  claude-settings.json   -> ~/.claude/settings.json
-```
+All of them are in `config/` and are downloaded as the script runs.
 
-`.zshrc` is **generated**: `zsh/base.zsh` (PATH, history,
-completion), then one snippet for each tool actually installed,
-then `zsh/end.zsh` (plugins). Install something later, re-run the
-script, and its snippet appears.
+| In the repo            | Installed to                     | What it holds |
+|------------------------|----------------------------------|---------------|
+| `zshenv`               | `~/.zshenv`                      | only `ZDOTDIR=~/.config/zsh` |
+| `zsh/*.zsh`            | `~/.config/zsh/.zshrc`           | generated, see below |
+| `starship.toml`        | `~/.config/starship.toml`        | powerline prompt: OS, directory, git, language versions, conda env, time |
+| `tmux.conf`            | `~/.config/tmux/tmux.conf`       | `hjkl` pane moves, `\|` / `-` splits, mouse, true color, passthrough; status bar only over SSH |
+| `fastfetch/`           | `~/.config/fastfetch/`           | greeting layout and logo |
+| `claude-settings.json` | `~/.claude/settings.json`        | Claude Code: no reading `.env`, keys or `~/.ssh`; Concise output; thinking on |
 
-Put your own additions and API keys in `~/.config/zsh/local.zsh`
-(mode 600). The script creates it once and never touches it again.
+`.zshrc` is **generated**, in this order:
+
+1. `brew shellenv` (macOS only)
+2. `zsh/base.zsh`: PATH (`~/.local/bin`, `~/.cargo/bin`), history,
+   options, completion, `..` and git aliases
+3. one snippet per tool that is actually installed: `micromamba`,
+   `nvim`, `eza`, `bat`, `starship`, `zoxide`, `fzf`, `yazi`,
+   `direnv`, `atuin`
+4. `zsh/end.zsh`: `local.zsh`, then the two plugins
+5. `zsh/fastfetch.zsh`, if fastfetch is installed
+
+So nothing in it refers to a command that is not there. Install
+something later, re-run the script, and its snippet appears.
+
+### local.zsh
+
+`~/.config/zsh/local.zsh` (mode 600) is for API keys and anything
+that belongs to one machine only: toolchains like `JAVA_HOME`,
+cache directories on a data disk, cluster-specific functions. The
+script creates it once and never touches it again; an existing
+`secrets.zsh` from an older setup is renamed to it.
 
 Every file that gets replaced is moved to
 `~/.local/state/quick_setup/backup-<time>/` first.
+
+## Keeping machines in sync
+
+Change files in `config/` (or `install.sh`), push, then on each
+machine:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh | bash -s -- -y
+```
+
+Unchanged files are skipped; changed ones are backed up and
+replaced. GitHub's raw URLs are cached for a few minutes, so wait a
+little after pushing, or a machine may still get the old script.
 
 ## Adding a tool
 
