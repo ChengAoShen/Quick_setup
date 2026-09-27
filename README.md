@@ -67,6 +67,7 @@ it. cargo is there for Rust development, not for installing tools.
 | bat       | `cat` with highlighting       | `c`                                    |
 | fd        | modern `find`                 | —                                      |
 | ripgrep   | fast grep (`rg`)              | —                                      |
+| jq        | JSON processor                | —                                      |
 | delta     | git diff pager                | —                                      |
 | neovim    | editor                        | `EDITOR=nvim`, `vi`                    |
 | tmux      | terminal multiplexer          | `tmux.conf`                            |

@@ -63,6 +63,7 @@ conda-forge，不再同时用 `cargo install` 或其他安装方式，这样 PAT
 | bat       | 带语法高亮的 `cat`    | `c`                                  |
 | fd        | 现代化的 `find`       | —                                    |
 | ripgrep   | 快速 grep（`rg`）     | —                                    |
+| jq        | JSON 处理工具          | —                                    |
 | delta     | git diff 美化         | —                                    |
 | neovim    | 编辑器                | `EDITOR=nvim`、`vi`                  |
 | tmux      | 终端复用              | `tmux.conf`                          |

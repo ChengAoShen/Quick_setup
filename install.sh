@@ -142,6 +142,7 @@ eza        eza        eza         modern ls
 bat        bat        bat         cat with highlighting
 fd         fd         fd-find     modern find
 rg         ripgrep    ripgrep     fast grep
+jq         jq         jq          JSON processor
 delta      git-delta  git-delta   git diff pager
 nvim       neovim     nvim        editor
 tmux       tmux       tmux        terminal multiplexer
