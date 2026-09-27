@@ -6,11 +6,11 @@
 zsh、一套现代命令行工具以及它们的配置文件。
 
 ```sh
-bash <(curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh)
+curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh | bash
 ```
 
-无需 clone 仓库，配置文件在运行时从本仓库下载。`-y` 表示全部
-使用默认选项、不再询问；`QS_REF=<分支>` 可以从其他分支拉取配置。
+无需 clone 仓库，配置文件在运行时从本仓库下载。`… | bash -s -- -y`
+表示全部使用默认选项、不再询问；`QS_REF=<分支>` 可以从其他分支拉取配置。
 
 ## 工作流程
 

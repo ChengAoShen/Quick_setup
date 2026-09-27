@@ -2,7 +2,7 @@
 #
 # Quick_setup: an interactive installer for a zsh + CLI tools setup.
 #
-#   bash <(curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh)
+#   curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh | bash
 #
 #   -y          take every default without asking
 #   QS_REF=dev  fetch config files from another branch or tag
@@ -35,9 +35,9 @@ if [ -f "${BASH_SOURCE[0]:-}" ]; then
   [ -d "$here/config" ] && LOCAL=$here/config
 fi
 
-# Under `curl | bash` stdin is the script, so answers come from the
-# terminal. Without one there is nobody to ask.
-if [ $YES = 0 ] && ! { : </dev/tty; } 2>/dev/null; then YES=1; fi
+# Without a terminal there is nobody to ask.
+TTY=1
+{ : </dev/tty; } 2>/dev/null || { TTY=0; YES=1; }
 
 if [ -t 1 ]; then
   B=$'\033[1m' G=$'\033[32m' R=$'\033[31m' Y=$'\033[33m' D=$'\033[2m' N=$'\033[0m'
@@ -94,6 +94,14 @@ find_brew() {
   done
   return 1
 }
+
+
+# Everything below runs inside main(), called on the last line, so
+# under `curl | bash` nothing happens until the whole script has
+# arrived. main then points stdin at the terminal: otherwise any
+# installer it runs could read the rest of the script as input.
+main() {
+if [ $TTY = 1 ]; then exec </dev/tty; else exec </dev/null; fi
 
 
 # === 1. Look at the machine ===========================================
@@ -405,3 +413,7 @@ if [ -n "$FAILED" ]; then
   exit 1
 fi
 echo "  open a new terminal to start using it"
+}
+
+# One line, so bash has read it all before main swaps stdin away.
+main "$@"; exit $?

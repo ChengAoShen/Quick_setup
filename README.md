@@ -6,11 +6,11 @@ One interactive script that sets up zsh, a modern CLI toolchain
 and their config files on macOS or Linux, with or without sudo.
 
 ```sh
-bash <(curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh)
+curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh | bash
 ```
 
 Nothing needs cloning: config files are downloaded from this repo
-as the script goes. `-y` takes every default without asking;
+as the script goes. `… | bash -s -- -y` takes every default without asking;
 `QS_REF=<branch>` fetches configs from another branch.
 
 ## How it works
