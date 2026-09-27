@@ -17,7 +17,9 @@ REPO=ChengAoShen/Quick_setup
 RAW=https://raw.githubusercontent.com/$REPO/${QS_REF:-main}/config
 BACKUP=$HOME/.local/state/quick_setup/backup-$(date +%Y%m%d-%H%M%S)
 PLUGIN_DIR=$HOME/.local/share/zsh/plugins
-MAMBA_ROOT=$HOME/.local/share/mamba
+# micromamba 1.x defaulted to ~/micromamba; keep using it if it is there.
+MAMBA_ROOT=${MAMBA_ROOT_PREFIX:-$HOME/.local/share/mamba}
+[ -z "${MAMBA_ROOT_PREFIX:-}" ] && [ -d "$HOME/micromamba" ] && MAMBA_ROOT=$HOME/micromamba
 ZDIR=$HOME/.config/zsh
 
 YES=0
