@@ -371,6 +371,10 @@ do_zshrc() {
     has fastfetch && fetch zsh/fastfetch.zsh
   } >"$t" || { rm -f "$t"; return 1; }
   place "$t" "$ZDIR/.zshrc"
+  # An older version of this setup called it secrets.zsh.
+  if [ ! -e "$ZDIR/local.zsh" ] && [ -e "$ZDIR/secrets.zsh" ]; then
+    mv "$ZDIR/secrets.zsh" "$ZDIR/local.zsh" && ok "~${ZDIR#$HOME}/secrets.zsh -> local.zsh"
+  fi
   if [ ! -e "$ZDIR/local.zsh" ]; then
     printf '# Machine-local: API keys and anything else for this host only.\n' >"$ZDIR/local.zsh"
     chmod 600 "$ZDIR/local.zsh"
