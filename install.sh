@@ -79,6 +79,7 @@ place() {  # place <tmpfile> <dest>
     mv "$2" "$BACKUP/$(printf '%s' "${2#$HOME/}" | tr / _)"
   fi
   mkdir -p "$(dirname "$2")"
+  chmod 644 "$1"   # mktemp makes it 600
   mv "$1" "$2"
   ok "~${2#$HOME}"
 }
