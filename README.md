@@ -3,7 +3,7 @@
 **English** | [中文](README.zh-CN.md)
 
 One interactive script that sets up zsh, a modern CLI toolchain
-and their config files on macOS or Linux, with or without sudo.
+and their config files on macOS or Linux. Linux never needs sudo.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh | bash
@@ -20,12 +20,12 @@ as the script goes. `… | bash -s -- -y` takes every default without asking;
 3. **Install**: after one final confirmation, runs the steps in
    order and reports anything that failed.
 
-| Step            | macOS    | Linux, sudo                | Linux, no sudo                |
-|-----------------|----------|----------------------------|-------------------------------|
-| Package manager | Homebrew | apt/dnf/pacman + Homebrew  | micromamba in `~/.local/bin`  |
-| CLI tools       | brew     | brew                       | conda-forge env, linked into `~/.local/bin` |
-| zsh plugins     | git clone to `~/.local/share/zsh/plugins` | same | same |
-| Login shell     | `chsh`   | `chsh`                     | `~/.bashrc` execs zsh         |
+| Step            | macOS                   | Linux (no sudo)                              |
+|-----------------|-------------------------|----------------------------------------------|
+| Package manager | Homebrew                | micromamba in `~/.local/bin`                 |
+| CLI tools       | brew                    | conda-forge env, linked into `~/.local/bin`  |
+| zsh plugins     | git clone to `~/.local/share/zsh/plugins` | same                       |
+| Login shell     | `chsh`                  | `~/.bashrc` execs zsh                        |
 
 ## What can be installed
 
@@ -33,8 +33,8 @@ as the script goes. `… | bash -s -- -y` takes every default without asking;
 
 | Name       | When                   |
 |------------|------------------------|
-| Homebrew   | macOS, Linux with sudo |
-| micromamba | Linux without sudo     |
+| Homebrew   | macOS                  |
+| micromamba | Linux                  |
 
 **CLI tools**
 

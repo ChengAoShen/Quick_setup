@@ -117,28 +117,16 @@ case $(uname -s) in
 esac
 ARCH=$(uname -m)
 
-SUDO=sudo
-[ "$(id -u)" = 0 ] && SUDO=
-
 printf '%sQuick_setup%s  %s %s' "$B" "$N" "$OS" "$ARCH"
 [ -n "$LOCAL" ] && printf '  %s(local config: %s)%s' "$D" "$LOCAL" "$N"
 echo
 
-# MODE is how packages get installed: brew, or micromamba for a
-# machine without sudo, where everything has to live under $HOME.
+# MODE is how packages get installed: Homebrew on macOS, micromamba
+# on Linux. micromamba needs no root and gives the same recent
+# versions on every distro, where apt would lag years behind and
+# rename half the tools. Nothing on Linux ever needs sudo.
 MODE=brew
-if [ $OS = linux ]; then
-  say "Install mode"
-  echo "  1) sudo     system packages + Homebrew, zsh as login shell"
-  echo "  2) no sudo  everything under ~ via micromamba"
-  def=2
-  # Homebrew refuses to run as root, so root goes the micromamba way.
-  [ -n "$SUDO" ] && sudo -n true 2>/dev/null && def=1
-  if [ $YES = 1 ]; then pick=$def; else
-    printf '  choose [%s] ' "$def"; read -r pick </dev/tty || pick=
-  fi
-  [ "${pick:-$def}" = 2 ] && MODE=mamba
-fi
+[ $OS = linux ] && MODE=mamba
 
 # cmd  brew-package  conda-package  description
 TOOLS='
@@ -152,7 +140,7 @@ bat        bat        bat         cat with highlighting
 fd         fd         fd-find     modern find
 rg         ripgrep    ripgrep     fast grep
 delta      git-delta  git-delta   git diff pager
-nvim       neovim     neovim      editor
+nvim       neovim     nvim        editor
 tmux       tmux       tmux        terminal multiplexer
 gh         gh         gh          GitHub CLI
 lazygit    lazygit    lazygit     git TUI
@@ -182,10 +170,7 @@ if [ $MODE = brew ]; then
   if [ -n "$BREW" ]; then ok "Homebrew ($BREW)"
   else
     no "Homebrew"
-    if ask "Install Homebrew?" y; then
-      [ $OS = linux ] && DO="$DO sysdeps"
-      DO="$DO brew"
-    fi
+    ask "Install Homebrew?" y && DO="$DO brew"
   fi
   CAN_PKG=$( { [ -n "$BREW" ] || inlist brew "$DO"; } && echo 1)
 else
@@ -241,14 +226,14 @@ if will nvim && will git; then
   fi
 fi
 
+# chsh on macOS. On Linux chsh only takes shells in /etc/shells,
+# which needs root, so ~/.bashrc hands over to zsh instead.
 say "Login shell"
-if [ $MODE = mamba ]; then
-  if grep -q 'Quick_setup' "$HOME/.bashrc" 2>/dev/null; then ok "bash hands over to zsh"
-  else
-    no "zsh is not the login shell (chsh needs root)"
-    ask "Make interactive bash exec zsh via ~/.bashrc?" y && DO="$DO shell"
-  fi
-elif [ "$(basename "${SHELL:-}")" = zsh ]; then ok "zsh"
+if [ "$(basename "${SHELL:-}")" = zsh ]; then ok "zsh"
+elif grep -q 'Quick_setup' "$HOME/.bashrc" 2>/dev/null; then ok "bash hands over to zsh"
+elif [ $OS = linux ]; then
+  no "login shell is ${SHELL:-unknown}"
+  ask "Make interactive bash exec zsh via ~/.bashrc?" y && DO="$DO shell"
 else
   no "login shell is ${SHELL:-unknown}"
   ask "Change it to zsh?" y && DO="$DO shell"
@@ -267,19 +252,8 @@ ask "Go ahead?" y || exit 0
 
 # === 3. Do ============================================================
 
-do_sysdeps() {
-  local p="curl file git zsh"
-  if   has apt-get; then $SUDO apt-get update && $SUDO apt-get install -y build-essential procps $p
-  elif has dnf;     then $SUDO dnf install -y gcc gcc-c++ make procps-ng $p
-  elif has yum;     then $SUDO yum install -y gcc gcc-c++ make procps-ng $p
-  elif has pacman;  then $SUDO pacman -Sy --needed --noconfirm base-devel procps-ng $p
-  elif has zypper;  then $SUDO zypper install -y gcc gcc-c++ make procps $p
-  else warn "unknown package manager: install build tools, $p yourself"; return 1
-  fi
-}
-
 do_brew() {
-  [ -z "$SUDO" ] || sudo -v || return 1   # Homebrew's non-interactive mode needs sudo cached
+  sudo -v || return 1   # Homebrew's non-interactive mode needs sudo cached
   NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" &&
     find_brew
 }
@@ -376,7 +350,7 @@ do_tmux() {
 
 do_shell() {
   local z
-  if [ $MODE = mamba ]; then
+  if [ $OS = linux ]; then
     z=$(command -v zsh) || { warn "zsh not found"; return 1; }
     # Only interactive shells, so scp, rsync and VS Code Remote keep
     # getting the bash they expect.
@@ -391,12 +365,8 @@ esac
 # <<< Quick_setup <<<
 EOF
     warn "open a second session to check it works before closing this one"
-  elif [ $OS = mac ]; then
-    chsh -s /bin/zsh
   else
-    z=$(command -v zsh) || { warn "zsh not found"; return 1; }
-    grep -qx "$z" /etc/shells || echo "$z" | $SUDO tee -a /etc/shells >/dev/null
-    $SUDO chsh -s "$z" "$USER"
+    chsh -s /bin/zsh
   fi
 }
 

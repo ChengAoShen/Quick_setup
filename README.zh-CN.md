@@ -2,8 +2,8 @@
 
 [English](README.md) | **中文**
 
-一个交互式脚本，在 macOS 或 Linux（有无 sudo 均可）上配置好
-zsh、一套现代命令行工具以及它们的配置文件。
+一个交互式脚本，在 macOS 或 Linux 上配置好 zsh、一套现代命令行
+工具以及它们的配置文件。Linux 全程不需要 sudo。
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh | bash
@@ -18,12 +18,12 @@ curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/instal
 2. **询问**：所有问题在开头逐项问完。
 3. **安装**：最后确认一次后按顺序执行，结束时汇报失败的步骤。
 
-| 步骤       | macOS    | Linux（sudo）              | Linux（无 sudo）                  |
-|------------|----------|----------------------------|-----------------------------------|
-| 包管理器   | Homebrew | apt/dnf/pacman + Homebrew  | micromamba，装在 `~/.local/bin`   |
-| 命令行工具 | brew     | brew                       | conda-forge 环境，链接到 `~/.local/bin` |
-| zsh 插件   | git clone 到 `~/.local/share/zsh/plugins` | 同左 | 同左 |
-| 默认 shell | `chsh`   | `chsh`                     | 在 `~/.bashrc` 中 exec zsh        |
+| 步骤       | macOS    | Linux（无需 sudo）                      |
+|------------|----------|-----------------------------------------|
+| 包管理器   | Homebrew | micromamba，装在 `~/.local/bin`         |
+| 命令行工具 | brew     | conda-forge 环境，链接到 `~/.local/bin` |
+| zsh 插件   | git clone 到 `~/.local/share/zsh/plugins` | 同左   |
+| 默认 shell | `chsh`   | 在 `~/.bashrc` 中 exec zsh              |
 
 ## 可安装的内容
 
@@ -31,8 +31,8 @@ curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/instal
 
 | 名称       | 适用场景              |
 |------------|-----------------------|
-| Homebrew   | macOS、有 sudo 的 Linux |
-| micromamba | 无 sudo 的 Linux      |
+| Homebrew   | macOS                 |
+| micromamba | Linux                 |
 
 **命令行工具**
 
