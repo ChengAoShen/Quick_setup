@@ -249,7 +249,8 @@ if [ $OS = linux ]; then
   elif grep -q 'Quick_setup' "$HOME/.bashrc" 2>/dev/null; then ok "bash hands over to zsh"
   else
     no "login shell is ${SHELL:-unknown}"
-    if grep -q "^$(id -un):" /etc/passwd && has sudo; then
+    if grep -q "^$(id -un):" /etc/passwd && has sudo &&
+       { sudo -n true 2>/dev/null || id -Gn | grep -qwE 'sudo|wheel|admin'; }; then
       echo "  1) sudo chsh  make zsh the real login shell"
       echo "  2) .bashrc    interactive bash execs zsh, no sudo"
       if [ $YES = 1 ]; then pick=1; else
