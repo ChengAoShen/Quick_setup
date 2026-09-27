@@ -76,6 +76,10 @@ conda-forge，不再同时用 `cargo install` 或其他安装方式，这样 PAT
 | uv        | Python 包管理         | —                                    |
 | fastfetch | 系统信息欢迎页        | 启动时显示、`fastfetch/` 配置        |
 | yazi      | 终端文件管理器        | `y`（退出后 cd 到所在目录）          |
+| node      | JavaScript 运行时和 npm | —                                  |
+| tree-sitter | Neovim 用的解析器工具 | —                                    |
+| cc        | C 编译器（gcc）       | —                                    |
+| unzip     | 解压 zip              | —                                    |
 
 **其他**
 

@@ -80,6 +80,10 @@ it. cargo is there for Rust development, not for installing tools.
 | uv        | Python package manager        | —                                      |
 | fastfetch | system info greeting          | greeting on start, `fastfetch/` config |
 | yazi      | terminal file manager         | `y` (cd to where you quit)             |
+| node      | JavaScript runtime and npm    | —                                      |
+| tree-sitter | parser CLI for Neovim       | —                                      |
+| cc        | C compiler (gcc)              | —                                      |
+| unzip     | zip extractor                 | —                                      |
 
 **Others**
 

@@ -155,6 +155,10 @@ just       just       just        command runner
 uv         uv         uv          Python packages
 fastfetch  fastfetch  fastfetch   system info greeting
 yazi       yazi       yazi        terminal file manager
+node       node       nodejs      JavaScript runtime, npm
+tree-sitter tree-sitter-cli tree-sitter-cli parser CLI for Neovim
+cc         gcc        gcc         C compiler
+unzip      unzip      unzip       zip extractor
 '
 
 pkg_of() {  # pkg_of <cmd>
@@ -332,7 +336,11 @@ mamba_add() {  # mamba_add "<packages>" "<commands to link>"
   [ -d "$env" ] && sub=install
   micromamba $sub -y -r "$MAMBA_ROOT" -n tools -c conda-forge $1 || return 1
   for c in $2; do
-    [ "$c" = yazi ] && c="yazi ya"   # ya is yazi's plugin manager
+    case $c in
+      yazi) c="yazi ya" ;;         # ya is yazi's plugin manager
+      node) c="node npm npx" ;;
+      cc)   c="cc gcc" ;;
+    esac
     for c in $c; do
       [ -x "$env/bin/$c" ] && ln -sfn "$env/bin/$c" "$HOME/.local/bin/$c"
     done
