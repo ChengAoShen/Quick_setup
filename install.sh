@@ -106,7 +106,9 @@ if [ $TTY = 1 ]; then exec </dev/tty; else exec </dev/null; fi
 
 # === 1. Look at the machine ===========================================
 
-export PATH=$HOME/.local/bin:$PATH
+# bob keeps nvim in ~/.local/share/bob on Linux and in Application
+# Support on macOS.
+export PATH="$HOME/.local/bin:$HOME/.local/share/bob/nvim-bin:$HOME/Library/Application Support/bob/nvim-bin:$PATH"
 BREW=
 find_brew
 
@@ -128,7 +130,7 @@ echo
 MODE=brew
 [ $OS = linux ] && MODE=mamba
 
-# cmd  brew-package  conda-package  description
+# cmd  brew-package  conda-package  description   (- : installed another way)
 TOOLS='
 zsh        zsh        zsh         Z shell
 git        git        git         version control
@@ -140,7 +142,7 @@ bat        bat        bat         cat with highlighting
 fd         fd         fd-find     modern find
 rg         ripgrep    ripgrep     fast grep
 delta      git-delta  git-delta   git diff pager
-nvim       neovim     nvim        editor
+nvim       -          -           editor, via bob
 tmux       tmux       tmux        terminal multiplexer
 gh         gh         gh          GitHub CLI
 lazygit    lazygit    lazygit     git TUI
@@ -196,7 +198,8 @@ elif ask "Install all missing:$missing?" y; then PICK=$missing
 else
   for c in $missing; do ask "  $c?" y && PICK="$PICK $c"; done
 fi
-[ -n "$PICK" ] && DO="$DO tools"
+[ -n "$(echo " $PICK " | sed 's/ nvim / /')" ] && DO="$DO tools"
+inlist nvim "$PICK" && DO="$DO bob"
 
 say "zsh plugins"
 if [ -d "$PLUGIN_DIR/zsh-autosuggestions" ] && [ -d "$PLUGIN_DIR/zsh-syntax-highlighting" ]; then
@@ -271,8 +274,11 @@ do_mamba() {
 }
 
 do_tools() {
-  local c pkgs=
-  for c in $PICK; do has "$c" || pkgs="$pkgs $(pkg_of "$c")"; done
+  local c p pkgs=
+  for c in $PICK; do
+    p=$(pkg_of "$c")
+    [ "$p" = - ] || has "$c" || pkgs="$pkgs $p"
+  done
   [ -n "$pkgs" ] || return 0
   if [ $MODE = brew ]; then
     brew install $pkgs
@@ -287,6 +293,31 @@ do_tools() {
       [ -x "$env/bin/$c" ] && ln -sfn "$env/bin/$c" "$HOME/.local/bin/$c"
     done
   fi
+}
+
+# Neovim comes from bob, so every machine can be put on the same
+# version with `bob use <version>`. Same release binary on both
+# systems; brew has bob but conda-forge does not.
+do_bob() {
+  local a t
+  if ! has bob; then
+    case $OS-$ARCH in
+      mac-arm64)    a=macos-arm ;;
+      mac-x86_64)   a=macos-x86_64 ;;
+      linux-x86_64) a=linux-x86_64 ;;
+      linux-aarch64|linux-arm64) a=linux-arm ;;
+      *) warn "no bob build for $OS $ARCH"; return 1 ;;
+    esac
+    t=$(mktemp -d)
+    curl -fsSL -o "$t/bob.zip" "https://github.com/MordechaiHadad/bob/releases/latest/download/bob-$a.zip" || return 1
+    if has unzip; then unzip -q "$t/bob.zip" -d "$t"
+    else python3 -m zipfile -e "$t/bob.zip" "$t"
+    fi || { warn "need unzip or python3 to unpack bob"; return 1; }
+    mkdir -p "$HOME/.local/bin"
+    install -m 755 "$t/bob-$a/bob" "$HOME/.local/bin/bob" || return 1
+    rm -rf "$t"
+  fi
+  bob use stable
 }
 
 do_plugins() {

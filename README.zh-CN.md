@@ -48,7 +48,7 @@ curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/instal
 | fd        | 现代化的 `find`       | —                                    |
 | ripgrep   | 快速 grep（`rg`）     | —                                    |
 | delta     | git diff 美化         | —                                    |
-| neovim    | 编辑器                | `EDITOR=nvim`、`vi`                  |
+| neovim    | 编辑器，通过 [bob](https://github.com/MordechaiHadad/bob) 安装 | `EDITOR=nvim`、`vi`、bob 的 PATH |
 | tmux      | 终端复用              | `tmux.conf`                          |
 | gh        | GitHub 命令行         | —                                    |
 | lazygit   | git 终端界面          | —                                    |
