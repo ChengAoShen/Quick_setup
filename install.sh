@@ -190,13 +190,21 @@ say "CLI tools"
 missing=
 while read -r c _ _ desc; do
   [ -n "$c" ] || continue
-  if has "$c"; then ok "$c"; else no "$c  $D$desc$N"; missing="$missing $c"; fi
+  # Without root, whatever sits in /usr/bin can be years old (tmux
+  # and zsh too old for this config, say), so it is offered anyway.
+  case $OS:$(command -v "$c" 2>/dev/null) in
+    linux:/usr/bin/*|linux:/bin/*)
+      printf '  %s~%s %s  %s(system copy, may be old)%s\n' "$Y" "$N" "$c" "$D" "$N"
+      missing="$missing $c" ;;
+    *:?*) ok "$c" ;;
+    *)    no "$c  $D$desc$N"; missing="$missing $c" ;;
+  esac
 done <<EOF
 $TOOLS
 EOF
 if [ -z "$missing" ]; then :
 elif [ -z "$CAN_PKG" ]; then warn "no package manager, skipping tools"
-elif ask "Install all missing:$missing?" y; then PICK=$missing
+elif ask "Install all of:$missing?" y; then PICK=$missing
 else
   for c in $missing; do ask "  $c?" y && PICK="$PICK $c"; done
 fi
@@ -292,7 +300,7 @@ do_tools() {
   local c p pkgs=
   for c in $PICK; do
     p=$(pkg_of "$c")
-    [ "$p" = - ] || has "$c" || pkgs="$pkgs $p"
+    [ "$p" = - ] || pkgs="$pkgs $p"
   done
   [ -n "$pkgs" ] || return 0
   if [ $MODE = brew ]; then
