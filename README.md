@@ -1,88 +1,59 @@
-# GeneralConfig
+# Quick_setup
 
-Shell, prompt and tmux configuration for my machines, split by
-operating system — which is where the real difference is, since
-Homebrew exists on one side of that line and not the other.
-
-```sh
-git clone https://github.com/ChengAoShen/GeneralConfig
-./GeneralConfig/bootstrap.sh install --tools
-```
-
-## What is here
-
-```
-mac/     zshenv  zshrc  zprofile  starship.toml  tmux.conf
-         claude-settings.json  fastfetch/
-linux/   zshenv  zshrc  starship.toml  tmux.conf
-         claude-settings.json
-bootstrap.sh   copies one of them into $HOME, picked by uname
-```
-
-Each directory is a complete set. `mac/zshrc` is the whole file,
-top to bottom, in the order zsh reads it — nothing is assembled
-from fragments, and no file has to be read together with another
-one to make sense.
-
-The price is that `starship.toml` exists twice. It is the same
-prompt on both, so when it changes, change it in both.
-
-A Mac used as a server gets `mac/` — the greeting and the hidden
-tmux status bar come with it. If that ever stops being what I
-want, that is the moment to split further, not before.
-
-## The two directions
+One interactive script that sets up zsh, a modern CLI toolchain
+and their config files on macOS or Linux, with or without sudo.
 
 ```sh
-./bootstrap.sh install    # repo -> $HOME, after a pull
-./bootstrap.sh collect    # $HOME -> repo, after editing in place
+bash <(curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh)
 ```
 
-Files are copied, not linked: `~/.config/zsh/.zshrc` is a real
-file you can edit like any other, and nothing in `$HOME` points
-back here. Both directions copy only what actually differs and
-say so; `--dry-run` prints the same without touching anything.
+Nothing needs cloning: config files are downloaded from this repo
+as the script goes. `-y` takes every default without asking;
+`QS_REF=<branch>` fetches configs from another branch.
 
-`bootstrap.sh` also clones or pulls the two things that are not
-configuration files — the Neovim config below, and, on Linux, the
-zsh plugins — and `--tools` installs the CLI toolchain from
-Homebrew or, on a machine without root, from conda-forge.
+## What it does
 
-## Secrets
+1. **Looks** at the system and shows what is already there.
+2. **Asks**, one item at a time, what to install or write.
+3. **Does it** in order, then reports anything that failed.
 
-`~/.config/zsh/secrets.zsh` is created by `bootstrap.sh`, mode
-600, and is not in this repo. API keys go there and nowhere else
-— in particular not in `zshrc`, which `collect` would copy
-straight into a commit.
+| Step            | macOS    | Linux, sudo                | Linux, no sudo                |
+|-----------------|----------|----------------------------|-------------------------------|
+| Package manager | Homebrew | apt/dnf/pacman + Homebrew  | micromamba in `~/.local/bin`  |
+| CLI tools       | brew     | brew                       | conda-forge env, linked into `~/.local/bin` |
+| zsh plugins     | git clone to `~/.local/share/zsh/plugins` | same | same |
+| Login shell     | `chsh`   | `chsh`                     | `~/.bashrc` execs zsh         |
 
-## Neovim
+Tools on offer: zsh, git, starship, zoxide, fzf, eza, bat, fd,
+ripgrep, delta, neovim, tmux, gh, lazygit, btop, atuin, direnv,
+just, uv, fastfetch, and optionally Claude Code.
 
-Its own repo, [ChengAoShen/nvim][nvim], cloned to `~/.config/nvim`
-by `bootstrap.sh` and updated with it. Neovim itself is managed by
-[bob][bob]; keep machines on the same version with `bob use`.
+## Config files
 
-## Why the Linux side is different
+```
+config/
+  zshenv                 -> ~/.zshenv (sets ZDOTDIR)
+  zsh/*.zsh              -> assembled into ~/.config/zsh/.zshrc
+  starship.toml          -> ~/.config/starship.toml
+  tmux.conf              -> ~/.config/tmux/tmux.conf
+  fastfetch/             -> ~/.config/fastfetch/
+  claude-settings.json   -> ~/.claude/settings.json
+```
 
-In practice `linux/` means one machine: the shared lab GPU box.
-Each of these follows from something about it, not from drift.
+`.zshrc` is **generated**: `zsh/base.zsh`, then one snippet for
+each tool actually installed (`zsh/eza.zsh`, `zsh/starship.zsh`,
+...), then `zsh/end.zsh`. Install something later, re-run the
+script, and its snippet appears.
 
-- **No greeting.** `fastfetch` is macOS-only; a banner on every
-  `ssh host cmd` is noise.
-- **tmux status bar on, off on macOS.** Sessions there outlive
-  the connection and there are usually several.
-- **zsh is not the login shell.** `chsh` only accepts shells in
-  `/etc/shells`, which needs root. A guarded `exec zsh` in
-  `~/.bashrc` hands off instead, skipping non-interactive
-  sessions so scp, rsync and VS Code Remote keep working.
-- **Caches point at `/data`.** `$HOME` shares a 1.8T root volume
-  with the rest of the lab; `/data` has its own 14T NVMe. Guarded
-  on `/data/$USER` existing, so the file still works elsewhere.
-- **CLI tools come from a conda env that is never activated.**
-  Only the wanted binaries are symlinked into
-  `~/.local/share/tools/bin`; the environment also carries its own
-  openssl and ncurses utilities, which should not shadow the
-  system ones, and its libstdc++ should not shadow the one a CUDA
-  build expects.
+Put your own additions and API keys in `~/.config/zsh/local.zsh`
+(mode 600). The script creates it once and never touches it again.
 
-[nvim]: https://github.com/ChengAoShen/nvim
-[bob]: https://github.com/MordechaiHadad/bob
+Every file that gets replaced is moved to
+`~/.local/state/quick_setup/backup-<time>/` first.
+
+## Adding a tool
+
+Add a line to `TOOLS` in `install.sh` (command, brew package,
+conda package, description). If it needs shell setup, add
+`config/zsh/<command>.zsh` and put the command in the snippet list
+in `do_zshrc`.

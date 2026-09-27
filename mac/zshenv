@@ -1,4 +1,0 @@
-# Sourced by every zsh before anything else. Its one job is to say
-# where the rest of the configuration lives.
-
-export ZDOTDIR="$HOME/.config/zsh"

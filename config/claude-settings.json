@@ -18,11 +18,7 @@
       "Read(**/id_rsa)",
       "Read(**/id_ed25519)",
       "Read(~/.ssh/**)",
-      "Read(~/.aws/**)",
-      "Bash(rm -rf /)",
-      "Bash(rm -rf /*)",
-      "Bash(rm -rf ~)",
-      "Bash(rm -rf ~/*)"
+      "Read(~/.aws/**)"
     ],
     "defaultMode": "bypassPermissions"
   },
@@ -34,12 +30,17 @@
       }
     }
   },
+  "enabledPlugins": {
+    "typesafe@typesafe-ai": true
+  },
   "outputStyle": "Concise",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "auto",
   "agentPushNotifEnabled": true,
-  "enabledPlugins": {
-    "typesafe@typesafe-ai": true
-  }
+  "alwaysThinkingEnabled": true,
+  "showThinkingSummaries": true,
+  "effortLevel": "medium",
+  "tui": "fullscreen",
+  "autoUpdatesChannel": "latest"
 }
