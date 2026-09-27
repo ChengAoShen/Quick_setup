@@ -2,10 +2,11 @@
 
 # --- Greeting -----------------------------------------------
 
-# WezTerm reads kitty-direct's file path on its own side, which fails
-# under WSL; iTerm's protocol sends the image itself.
+# kitty-direct sends only a file path, which the terminal must read
+# itself: that fails under WSL (the terminal is a Windows program) and
+# in WezTerm. iTerm's protocol sends the image data instead.
 if [[ $TERM != dumb ]]; then
-  if [[ $TERM_PROGRAM == WezTerm ]]; then
+  if [[ $TERM_PROGRAM == WezTerm || -n $WSL_DISTRO_NAME ]]; then
     fastfetch --logo-type iterm
   else
     fastfetch
