@@ -3,7 +3,8 @@
 [English](README.md) | **中文**
 
 一个交互式脚本，在 macOS 或 Linux 上配置好 zsh、一套现代命令行
-工具以及它们的配置文件。Linux 全程不需要 sudo。
+工具以及它们的配置文件。Linux 上所有东西都装在 `~` 下，sudo 只在
+切换默认 shell 时可选使用。
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh | bash
@@ -18,12 +19,12 @@ curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/instal
 2. **询问**：所有问题在开头逐项问完。
 3. **安装**：最后确认一次后按顺序执行，结束时汇报失败的步骤。
 
-| 步骤       | macOS    | Linux（无需 sudo）                      |
+| 步骤       | macOS    | Linux                                   |
 |------------|----------|-----------------------------------------|
 | 包管理器   | Homebrew | micromamba，装在 `~/.local/bin`         |
 | 命令行工具 | brew     | conda-forge 环境，链接到 `~/.local/bin` |
 | zsh 插件   | git clone 到 `~/.local/share/zsh/plugins` | 同左   |
-| 默认 shell | `chsh`   | 在 `~/.bashrc` 中 exec zsh              |
+| 默认 shell | 已是 zsh | 能用 sudo 就 `sudo chsh`，否则在 `~/.bashrc` 中 exec zsh |
 
 ## 可安装的内容
 
@@ -67,7 +68,7 @@ curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/instal
 | zsh-syntax-highlighting | 输入时高亮命令                                        |
 | Claude Code             | Anthropic 的命令行工具（默认不装），附带 `settings.json` |
 | Neovim 配置             | 将 [ChengAoShen/nvim](https://github.com/ChengAoShen/nvim) clone 到 `~/.config/nvim` |
-| 默认 shell              | 将 zsh 设为默认 shell                                 |
+| 默认 shell              | 仅 Linux：将 zsh 设为默认 shell                       |
 
 ## 配置文件
 

@@ -126,7 +126,7 @@ echo
 # MODE is how packages get installed: Homebrew on macOS, micromamba
 # on Linux. micromamba needs no root and gives the same recent
 # versions on every distro, where apt would lag years behind and
-# rename half the tools. Nothing on Linux ever needs sudo.
+# rename half the tools. sudo is only ever used, if at all, for chsh.
 MODE=brew
 [ $OS = linux ] && MODE=mamba
 
@@ -198,7 +198,7 @@ elif ask "Install all missing:$missing?" y; then PICK=$missing
 else
   for c in $missing; do ask "  $c?" y && PICK="$PICK $c"; done
 fi
-[ -n "$(echo " $PICK " | sed 's/ nvim / /')" ] && DO="$DO tools"
+[ -n "$(echo " $PICK " | sed 's/ nvim / /' | tr -d ' ')" ] && DO="$DO tools"
 inlist nvim "$PICK" && DO="$DO bob"
 
 say "zsh plugins"
@@ -229,17 +229,30 @@ if will nvim && will git; then
   fi
 fi
 
-# chsh on macOS. On Linux chsh only takes shells in /etc/shells,
-# which needs root, so ~/.bashrc hands over to zsh instead.
-say "Login shell"
-if [ "$(basename "${SHELL:-}")" = zsh ]; then ok "zsh"
-elif grep -q 'Quick_setup' "$HOME/.bashrc" 2>/dev/null; then ok "bash hands over to zsh"
-elif [ $OS = linux ]; then
-  no "login shell is ${SHELL:-unknown}"
-  ask "Make interactive bash exec zsh via ~/.bashrc?" y && DO="$DO shell"
-else
-  no "login shell is ${SHELL:-unknown}"
-  ask "Change it to zsh?" y && DO="$DO shell"
+# Linux only: macOS has had zsh as the default since Catalina.
+# chsh with sudo when it can work; otherwise ~/.bashrc hands over.
+# chsh cannot help an LDAP account, which is not in /etc/passwd.
+SHELL_HOW=bashrc
+if [ $OS = linux ]; then
+  say "Login shell"
+  if [ "$(basename "${SHELL:-}")" = zsh ]; then ok "zsh"
+  elif grep -q 'Quick_setup' "$HOME/.bashrc" 2>/dev/null; then ok "bash hands over to zsh"
+  else
+    no "login shell is ${SHELL:-unknown}"
+    if grep -q "^$(id -un):" /etc/passwd && has sudo; then
+      echo "  1) sudo chsh  make zsh the real login shell"
+      echo "  2) .bashrc    interactive bash execs zsh, no sudo"
+      if [ $YES = 1 ]; then pick=1; else
+        printf '  choose, or n to skip [1] '; read -r pick </dev/tty || pick=
+      fi
+      case ${pick:-1} in
+        1) DO="$DO shell"; SHELL_HOW=chsh ;;
+        2) DO="$DO shell" ;;
+      esac
+    else
+      ask "Make interactive bash exec zsh via ~/.bashrc?" y && DO="$DO shell"
+    fi
+  fi
 fi
 
 if [ -z "$DO" ]; then say "Nothing to do"; exit 0; fi
@@ -381,11 +394,19 @@ do_tmux() {
 
 do_shell() {
   local z
-  if [ $OS = linux ]; then
-    z=$(command -v zsh) || { warn "zsh not found"; return 1; }
-    # Only interactive shells, so scp, rsync and VS Code Remote keep
-    # getting the bash they expect.
-    cat >>"$HOME/.bashrc" <<EOF
+  if [ $SHELL_HOW = chsh ]; then
+    # Prefer the system zsh: one under ~ breaks login whenever home
+    # is not mounted yet.
+    for z in /usr/bin/zsh /bin/zsh "$(command -v zsh)"; do [ -x "$z" ] && break; done
+    [ -x "$z" ] || { warn "zsh not found"; return 1; }
+    grep -qx "$z" /etc/shells || echo "$z" | sudo tee -a /etc/shells >/dev/null || return 1
+    sudo chsh -s "$z" "$(id -un)"
+    return
+  fi
+  z=$(command -v zsh) || { warn "zsh not found"; return 1; }
+  # Only interactive shells, so scp, rsync and VS Code Remote keep
+  # getting the bash they expect.
+  cat >>"$HOME/.bashrc" <<EOF
 
 # >>> Quick_setup: hand interactive bash over to zsh >>>
 case \$- in *i*)
@@ -395,10 +416,7 @@ case \$- in *i*)
 esac
 # <<< Quick_setup <<<
 EOF
-    warn "open a second session to check it works before closing this one"
-  else
-    chsh -s /bin/zsh
-  fi
+  warn "open a second session to check it works before closing this one"
 }
 
 FAILED=

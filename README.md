@@ -3,7 +3,8 @@
 **English** | [中文](README.zh-CN.md)
 
 One interactive script that sets up zsh, a modern CLI toolchain
-and their config files on macOS or Linux. Linux never needs sudo.
+and their config files on macOS or Linux. On Linux everything
+installs under `~`; sudo is only offered for changing the login shell.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/ChengAoShen/Quick_setup/main/install.sh | bash
@@ -20,12 +21,12 @@ as the script goes. `… | bash -s -- -y` takes every default without asking;
 3. **Install**: after one final confirmation, runs the steps in
    order and reports anything that failed.
 
-| Step            | macOS                   | Linux (no sudo)                              |
+| Step            | macOS                   | Linux                                        |
 |-----------------|-------------------------|----------------------------------------------|
 | Package manager | Homebrew                | micromamba in `~/.local/bin`                 |
 | CLI tools       | brew                    | conda-forge env, linked into `~/.local/bin`  |
 | zsh plugins     | git clone to `~/.local/share/zsh/plugins` | same                       |
-| Login shell     | `chsh`                  | `~/.bashrc` execs zsh                        |
+| Login shell     | already zsh             | `sudo chsh` if possible, else `~/.bashrc` execs zsh |
 
 ## What can be installed
 
@@ -69,7 +70,7 @@ as the script goes. `… | bash -s -- -y` takes every default without asking;
 | zsh-syntax-highlighting | colors commands as you type                            |
 | Claude Code             | Anthropic's CLI (off by default), plus `settings.json` |
 | Neovim config           | clones [ChengAoShen/nvim](https://github.com/ChengAoShen/nvim) to `~/.config/nvim` |
-| Login shell             | makes zsh the default shell                            |
+| Login shell             | Linux only: makes zsh the default shell                |
 
 ## Config files
 
