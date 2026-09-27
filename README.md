@@ -1,5 +1,7 @@
 # Quick_setup
 
+**English** | [中文](README.zh-CN.md)
+
 One interactive script that sets up zsh, a modern CLI toolchain
 and their config files on macOS or Linux, with or without sudo.
 
@@ -11,11 +13,12 @@ Nothing needs cloning: config files are downloaded from this repo
 as the script goes. `-y` takes every default without asking;
 `QS_REF=<branch>` fetches configs from another branch.
 
-## What it does
+## How it works
 
-1. **Looks** at the system and shows what is already there.
-2. **Asks**, one item at a time, what to install or write.
-3. **Does it** in order, then reports anything that failed.
+1. **Detect**: shows the system and what is already installed.
+2. **Ask**: every question comes up front, one item at a time.
+3. **Install**: after one final confirmation, runs the steps in
+   order and reports anything that failed.
 
 | Step            | macOS    | Linux, sudo                | Linux, no sudo                |
 |-----------------|----------|----------------------------|-------------------------------|
@@ -24,9 +27,49 @@ as the script goes. `-y` takes every default without asking;
 | zsh plugins     | git clone to `~/.local/share/zsh/plugins` | same | same |
 | Login shell     | `chsh`   | `chsh`                     | `~/.bashrc` execs zsh         |
 
-Tools on offer: zsh, git, starship, zoxide, fzf, eza, bat, fd,
-ripgrep, delta, neovim, tmux, gh, lazygit, btop, atuin, direnv,
-just, uv, fastfetch, and optionally Claude Code.
+## What can be installed
+
+**Package managers**
+
+| Name       | When                   |
+|------------|------------------------|
+| Homebrew   | macOS, Linux with sudo |
+| micromamba | Linux without sudo     |
+
+**CLI tools**
+
+| Tool      | What it is                    | Shell setup added to `.zshrc`          |
+|-----------|-------------------------------|----------------------------------------|
+| zsh       | Z shell                       | —                                      |
+| git       | version control               | aliases `g` `gs` `gd` `gl`             |
+| starship  | prompt                        | prompt init, `starship.toml`           |
+| zoxide    | smarter `cd`                  | replaces `cd`                          |
+| fzf       | fuzzy finder                  | Ctrl-T / Alt-C / Ctrl-R                |
+| eza       | modern `ls`                   | `ls` `ll` `la` `lt` `lta`              |
+| bat       | `cat` with highlighting       | `c`                                    |
+| fd        | modern `find`                 | —                                      |
+| ripgrep   | fast grep (`rg`)              | —                                      |
+| delta     | git diff pager                | —                                      |
+| neovim    | editor                        | `EDITOR=nvim`, `vi`                    |
+| tmux      | terminal multiplexer          | `tmux.conf`                            |
+| gh        | GitHub CLI                    | —                                      |
+| lazygit   | git TUI                       | —                                      |
+| btop      | system monitor                | —                                      |
+| atuin     | searchable shell history      | takes over Ctrl-R                      |
+| direnv    | per-directory environment     | hook                                   |
+| just      | command runner                | —                                      |
+| uv        | Python package manager        | —                                      |
+| fastfetch | system info greeting          | greeting on start, `fastfetch/` config |
+
+**Others**
+
+| Item                    | What it does                                           |
+|-------------------------|--------------------------------------------------------|
+| zsh-autosuggestions     | suggests commands from history                         |
+| zsh-syntax-highlighting | colors commands as you type                            |
+| Claude Code             | Anthropic's CLI (off by default), plus `settings.json` |
+| Neovim config           | clones [ChengAoShen/nvim](https://github.com/ChengAoShen/nvim) to `~/.config/nvim` |
+| Login shell             | makes zsh the default shell                            |
 
 ## Config files
 
@@ -40,9 +83,9 @@ config/
   claude-settings.json   -> ~/.claude/settings.json
 ```
 
-`.zshrc` is **generated**: `zsh/base.zsh`, then one snippet for
-each tool actually installed (`zsh/eza.zsh`, `zsh/starship.zsh`,
-...), then `zsh/end.zsh`. Install something later, re-run the
+`.zshrc` is **generated**: `zsh/base.zsh` (PATH, history,
+completion), then one snippet for each tool actually installed,
+then `zsh/end.zsh` (plugins). Install something later, re-run the
 script, and its snippet appears.
 
 Put your own additions and API keys in `~/.config/zsh/local.zsh`
