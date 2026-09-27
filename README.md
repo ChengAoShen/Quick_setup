@@ -51,7 +51,7 @@ as the script goes. `… | bash -s -- -y` takes every default without asking;
 | fd        | modern `find`                 | —                                      |
 | ripgrep   | fast grep (`rg`)              | —                                      |
 | delta     | git diff pager                | —                                      |
-| neovim    | editor, installed with [bob](https://github.com/MordechaiHadad/bob) | `EDITOR=nvim`, `vi`, bob's PATH |
+| neovim    | editor                        | `EDITOR=nvim`, `vi`                    |
 | tmux      | terminal multiplexer          | `tmux.conf`                            |
 | gh        | GitHub CLI                    | —                                      |
 | lazygit   | git TUI                       | —                                      |
