@@ -65,7 +65,7 @@ brew 的 `rust` 包会在 PATH 上多放一份 cargo；Claude Code 官方安装�
 | 默认 shell  | 账号能用 sudo 就 `sudo chsh` 到系统 zsh（没有则用 apt/dnf/pacman 安装），否则在 `~/.bashrc` 中 exec zsh |
 
 所有安装脚本都不会改 shell 配置文件，PATH 已经在 `.zshrc` 里。只在 `/usr/bin` 或 `/bin` 里有的工具也会列出来供安装，因为系统
-自带的版本可能很旧。
+自带的版本可能很旧；zsh 除外，默认 shell 用的正该是系统那份。
 旧版本脚本用 conda-forge 装的 uv 会被换成官方版本，并从环境中删除。micromamba 的环境根目录是 `~/.local/share/mamba`；
 如果已有 `~/micromamba`，则沿用它。
 

@@ -72,7 +72,8 @@ keeps it current, which conda-forge's package does not.
 
 Every installer is told to leave shell files alone; `.zshrc`
 already has the PATH. A tool found only in `/usr/bin` or `/bin` is
-still offered, since system copies there can be years old. A
+still offered, since system copies there can be years old; not
+zsh, whose system copy is what the login shell should be. A
 conda-forge uv from an older version of this script is replaced by
 the official one and removed from the env. The micromamba env root
 is `~/.local/share/mamba`, or `~/micromamba` if that already exists.

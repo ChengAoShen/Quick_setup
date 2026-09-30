@@ -76,12 +76,17 @@ can_sudo() {
 can_chsh() { grep -q "^$(id -un):" /etc/passwd && can_sudo; }
 
 # Print the state of one tool; status 0 when it should be offered.
-# Without root, whatever sits in /usr/bin can be years old (tmux
-# and zsh too old for this config, say), so it is offered anyway.
+# Without root, whatever sits in /usr/bin can be years old (tmux too
+# old for this config, say), so it is offered anyway. Not zsh: the
+# system one is what the login shell should be, and a copy under ~
+# is only for an account that cannot have it.
 check() {  # check <cmd> <description> [official]
   if [ -n "${3:-}" ] && from_env "$1"; then
     old "$1  ${D}(conda-forge copy, replaced by the official one)$N"; return 0
   fi
+  case $1:$(command -v "$1" 2>/dev/null) in
+    zsh:/usr/bin/*|zsh:/bin/*) ok "$1  ${D}(system)$N"; return 1 ;;
+  esac
   case $(command -v "$1" 2>/dev/null) in
     /usr/bin/*|/bin/*) old "$1  ${D}(system copy, may be old)$N"; return 0 ;;
     ?*) ok "$1"; return 1 ;;
